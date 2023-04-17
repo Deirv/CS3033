@@ -1,0 +1,48 @@
+import pandas as pd
+import numpy as np
+from sklearn import datasets
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
+
+df = pd.read_csv("https://raw.githubusercontent.com/andvise/DataAnalyticsDatasets/main/train_dataset.csv", index_col=0)
+
+# Check for infinite and negatuve values and replace with 0
+df = df.replace([np.inf, -np.inf], 0)
+df = df.fillna(0)
+
+# Label our target variable
+df['target'].value_counts()
+
+# Separate the target variable
+X = df.drop(columns=['target'])
+y = df['target']
+
+# Split the data into training and test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, train_size=0.7, random_state=42)
+
+# Normalize the data using standard scaling
+scaler = StandardScaler()
+X_train_norm = scaler.fit_transform(X_train)
+X_test_norm = scaler.transform(X_test)
+
+# Train the SVM classifier on the training data
+svm = SVC(kernel='linear', C=1.0, random_state=42)
+svm.fit(X_train_norm, y_train)
+
+# Predict the labels of the test data using the trained SVM classifier
+y_pred = svm.predict(X_test_norm)
+
+# Evaluate the performance of the SVM classifier using hold-out validation
+accuracy = accuracy_score(y_test, y_pred)
+precis = precision_score(y_test, y_pred, average='weighted')
+recall = recall_score(y_test, y_pred, average='weighted')
+f1 = f1_score(y_test, y_pred, average='weighted')
+confmat = confusion_matrix(y_test, y_pred)
+
+print(f"Accuracy: {accuracy}")
+print(f"Precision: {precis}")
+print(f"Recall: {recall}")
+print(f"F1 score: {f1}")
+print(f"Confusion matrix: {confmat}")
